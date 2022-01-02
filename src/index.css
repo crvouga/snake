@@ -1,0 +1,127 @@
+.game {
+  user-select: none;
+  font-family: sans-serif;
+  width: 520px;
+  height: 520px;
+  margin: auto;
+}
+
+.board-container {
+  position: relative;
+  padding: 5%;
+  background-color: #648f46;
+}
+
+.light-checker {
+  fill: #9bd240;
+}
+
+.dark-checker {
+  fill: #93ca38;
+}
+
+.score-board {
+  margin: 0;
+  padding: 3%;
+  background-color: #4a752c;
+  color: white;
+}
+
+.score-board > img {
+  transform: translatey(20%);
+  width: 8%;
+}
+
+.score {
+  display: inline-block;
+  width: 15%;
+  padding-left: 1%;
+  font-size: 1.5em;
+}
+
+.snake-body {
+  fill: transparent;
+  stroke: #527af5;
+  stroke-width: 0.85px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.white {
+  fill: white;
+}
+
+.light-blue {
+  fill: #527af5;
+}
+
+.dark-blue {
+  fill: #294fb1;
+}
+
+@keyframes oscillate-apple {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-apple {
+  animation: oscillate-apple 1s infinite ease-in;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fade-in 1s ease-in-out;
+  /* 	animation-delay: 1s; */
+}
+
+.show {
+  visibility: visible;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+.button {
+  cursor: pointer;
+  background-color: #1f47c2;
+  width: 50%;
+  height: 15%;
+  border-radius: 10px;
+  color: white;
+  font-size: 2em;
+  outline: none;
+}
+
+.button:hover {
+  background-color: #527af5;
+}
+
+.modal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
