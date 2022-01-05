@@ -133,3 +133,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+button:active {
+  opacity: 0.5;
+}

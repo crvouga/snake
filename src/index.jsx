@@ -1,54 +1,55 @@
 import "./index.css";
 import {
-  pipe,
-  map,
-  divide,
   __,
-  zipWith,
-  sortBy,
-  xprod,
-  range,
-  contains,
-  head,
-  tail,
-  not,
-  curry,
-  isNil,
+  add,
   always,
-  ifElse,
+  append,
+  apply,
+  assoc,
+  both,
+  complement,
+  contains,
+  curry,
+  divide,
+  dropRepeatsWith,
   either,
   equals,
-  sum,
-  subtract,
-  apply,
-  flip,
   evolve,
-  add,
-  inc,
-  length,
   find,
-  complement,
-  append,
-  dropRepeatsWith,
+  flip,
+  head,
   identity,
-  pick,
-  merge,
-  toUpper,
-  max,
-  assoc,
-  take,
-  prepend,
-  when,
-  prop,
-  unless,
-  pathOr,
+  ifElse,
+  inc,
+  isNil,
   last,
-  both,
+  length,
+  map,
+  max,
+  merge,
+  not,
+  omit,
+  pathOr,
+  pick,
+  pipe,
+  prepend,
+  prop,
   propOr,
+  range,
+  sortBy,
+  subtract,
+  sum,
+  tail,
+  take,
+  toUpper,
+  unless,
+  when,
+  xprod,
+  zipWith,
 } from "ramda";
 import ReactDOM from "react-dom";
 
-/* 
+/*
 
 
 helpers
@@ -59,14 +60,14 @@ helpers
 const magnitude = pipe(
   map((x) => x * x),
   sum,
-  Math.sqrt
+  Math.sqrt,
 );
 const truncate = pipe(Math.trunc, (x) => x | 0);
 const normalize = (v) => map(divide(__, magnitude(v)), v);
 const directionVectorBetween = pipe(
   zipWith(subtract),
   normalize,
-  map(truncate)
+  map(truncate),
 );
 const distance = pipe(zipWith(subtract), magnitude);
 const radiansToDegrees = (radians) => (radians * 180) / Math.PI;
@@ -95,15 +96,43 @@ const initialSnake = [
   [i - 2, j],
 ];
 
+const Direction = {
+  East: "EAST",
+  West: "WEST",
+  North: "NORTH",
+  South: "SOUTH",
+};
+
 const initialState = {
   _state: "IDLE",
   apple: [amountOfColumns - i, j],
   snake: initialSnake,
-  directionQueue: ["EAST"],
+  directionQueue: [Direction.East],
   size: length(initialSnake) + 1,
   score: 0,
   highScore: 0,
 };
+
+/*
+
+
+Actions Creators
+
+
+*/
+
+const makeRestart = () => ({
+  type: "RESTART",
+});
+
+const makeStep = () => ({
+  type: "STEP",
+});
+
+const makeTurn = (direction) => ({
+  type: "TURN",
+  value: direction,
+});
 
 /*
 
@@ -132,14 +161,14 @@ const respawnApple = (state) =>
   assoc(
     "apple",
     find(complement(contains(__, state.snake)), shuffle(board)),
-    state
+    state,
   );
 
 const directionToVector = prop(__, {
-  NORTH: [0, -1],
-  SOUTH: [0, 1],
-  WEST: [-1, 0],
-  EAST: [1, 0],
+  [Direction.North]: [0, -1],
+  [Direction.South]: [0, 1],
+  [Direction.West]: [-1, 0],
+  [Direction.East]: [1, 0],
 });
 
 const toNextSnakeHead = ({ directionQueue, snake }) =>
@@ -148,7 +177,7 @@ const toNextSnakeHead = ({ directionQueue, snake }) =>
 const moveSnake = (state) =>
   evolve(
     { snake: pipe(prepend(toNextSnakeHead(state)), take(state.size)) },
-    state
+    state,
   );
 
 const endGame = assoc("_state", "GAMEOVER");
@@ -163,14 +192,14 @@ const step = pipe(
   dequeueDirection,
   moveSnake,
   when(isSnakeEatingApple, pipe(respawnApple, increaseSize, updateScore)),
-  when(either(isSnakeEatingTail, isSnakeOutOfBounds), endGame)
+  when(either(isSnakeEatingTail, isSnakeOutOfBounds), endGame),
 );
 
 const toOppositeDirection = prop(__, {
-  NORTH: "SOUTH",
-  SOUTH: "NORTH",
-  EAST: "WEST",
-  WEST: "EAST",
+  [Direction.North]: Direction.South,
+  [Direction.South]: Direction.North,
+  [Direction.East]: Direction.West,
+  [Direction.West]: Direction.East,
 });
 
 const isOppositeDirections = (direction1, direction2) =>
@@ -182,10 +211,10 @@ const enqueueDirection = (state, nextDirection) =>
       directionQueue: pipe(
         append(nextDirection),
         dropRepeatsWith(either(equals, isOppositeDirections)),
-        take(3)
+        take(3),
       ),
     },
-    state
+    state,
   );
 
 const playGame = pipe(enqueueDirection, assoc("_state", "PLAY"));
@@ -234,7 +263,7 @@ const SemiCircle = (props) => <path {...props} d="M-1,0 a1,1 0 0,0 2,0" />;
 const isSnakeMovingTowardsApple = ({ directionQueue, snakePositions, apple }) =>
   equals(
     directionToVector(head(directionQueue)),
-    directionVectorBetween(apple, head(snakePositions))
+    directionVectorBetween(apple, head(snakePositions)),
   );
 
 const furthestDistanceSnakeOpensMouth = 4;
@@ -244,11 +273,16 @@ const isSnakeCloseToApple = ({ snakePositions, apple }) =>
 const toSnakeMouthClassName = ifElse(
   both(isSnakeMovingTowardsApple, isSnakeCloseToApple),
   always("show"),
-  always("hide")
+  always("hide"),
 );
 
-const SnakeMouth = (props) => (
-  <g {...props} className={toSnakeMouthClassName(props)}>
+const SnakeMouth = (
+  props,
+) => (
+  <g
+    {...omit(["directionQueue", "highScore", "snakePositions"], props)}
+    className={toSnakeMouthClassName(props)}
+  >
     <g transform="rotate(-90)">
       <SemiCircle className="light-blue" />
       <SemiCircle
@@ -266,7 +300,7 @@ const SnakeMouth = (props) => (
 const directionToDegrees = pipe(
   directionToVector,
   vectorToRadians,
-  radiansToDegrees
+  radiansToDegrees,
 );
 
 const toSnakeHeadTransform = ({ snakePositions, direction }) =>
@@ -275,8 +309,13 @@ const toSnakeHeadTransform = ({ snakePositions, direction }) =>
    scale(0.85) 
    translate(-0.2)`;
 
-const SnakeHead = (props) => (
-  <g transform={toSnakeHeadTransform(props)}>
+const SnakeHead = (
+  props,
+) => (
+  <g
+    {...omit(["directionQueue", "highScore", "snakePositions"], props)}
+    transform={toSnakeHeadTransform(props)}
+  >
     <circle cx="0.6" cy="0" r="0.53" className="light-blue" />
     <g className="dark-blue">
       <circle cx="0.7" cy="-0.25" r="0.07" />
@@ -290,9 +329,9 @@ const SnakeHead = (props) => (
   </g>
 );
 
-const SnakeBody = (props) => (
-  <polyline className="snake-body" points={props.snakePositions} />
-);
+const SnakeBody = (
+  props,
+) => <polyline className="snake-body" points={props.snakePositions} />;
 
 const Snake = (props) => (
   <g transform="translate(0.5 0.5)">
@@ -315,7 +354,9 @@ const Modal = (state) => (
 const toAppleClassName = ({ _state }) =>
   `apple ${propOr("", _state, { PLAY: "animate-apple" })}`;
 
-const Apple = ({ apple: [i, j], _state }) => (
+const Apple = (
+  { apple: [i, j], _state },
+) => (
   <svg x={i - 1} y={j - 1} width="3" height="3" viewBox="-3 -3 6 6">
     <image
       className={toAppleClassName({ _state })}
@@ -366,6 +407,19 @@ const ScoreBoard = ({ score, highScore }) => (
   </div>
 );
 
+const styles = {
+  button: {
+    borderRadius: "50%",
+    backgroundColor: "#343434",
+    border: "none",
+    height: "72px",
+    width: "72px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
 const Game = (props) => (
   <div className="game">
     <ScoreBoard {...props} />
@@ -373,11 +427,88 @@ const Game = (props) => (
       <Modal {...props} />
       <GameBoard {...props} />
     </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "12px",
+      }}
+    >
+      <button
+        style={styles.button}
+        onClick={() => input(makeTurn(Direction.North))}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="white"
+        >
+          <path
+            fillRule="evenodd"
+            d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      <div style={{ display: "flex" }}>
+        <button
+          style={styles.button}
+          onClick={() => input(makeTurn(Direction.West))}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="white"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        <div style={{ width: "24px" }} />
+        <button
+          style={styles.button}
+          onClick={() => input(makeTurn(Direction.East))}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="white"
+          >
+            <path
+              fillRule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+      <button
+        style={styles.button}
+        onClick={() => input(makeTurn(Direction.South))}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="white"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+    </div>
   </div>
 );
 
 const lerp = curry(
-  (percentage, x1, x2) => (1 - percentage) * x1 + percentage * x2
+  (percentage, x1, x2) => (1 - percentage) * x1 + percentage * x2,
 );
 
 const lerpVector = (percentage, v1, v2) => zipWith(lerp(percentage), v1, v2);
@@ -394,45 +525,9 @@ const toGameProps = (elapsedTime, previousState, state) =>
     snakePositions: toSnakePositions(
       elapsedTime,
       previousState.snake,
-      state.snake
+      state.snake,
     ),
   });
-
-/*
-
-
-Actions Creators
-
-
-*/
-
-const makeRestart = () => ({
-  type: "RESTART",
-});
-
-const makeStep = () => ({
-  type: "STEP",
-});
-
-const keyToDirection = prop(__, {
-  KEYW: "NORTH",
-  KEYS: "SOUTH",
-  KEYA: "WEST",
-  KEYD: "EAST",
-  ARROWUP: "NORTH",
-  ARROWDOWN: "SOUTH",
-  ARROWLEFT: "WEST",
-  ARROWRIGHT: "EAST",
-});
-
-const keyEventToKey = pipe(prop("code"), toUpper);
-
-const keyEventToDirection = pipe(keyEventToKey, keyToDirection);
-
-const makeTurn = (direction) => ({
-  type: "TURN",
-  value: direction,
-});
 
 /*
 
@@ -460,9 +555,10 @@ const input = (action) => {
 };
 
 const output = (elapsedTime) => {
-  const props = toGameProps(elapsedTime, previousState, state);
-  const root = document.getElementById("root");
-  ReactDOM.render(<Game {...props} />, root);
+  ReactDOM.render(
+    <Game {...toGameProps(elapsedTime, previousState, state)} />,
+    document.getElementById("root"),
+  );
 };
 
 /*
@@ -470,9 +566,25 @@ const output = (elapsedTime) => {
 Keyboard
 
 */
+
+const keyToDirection = prop(__, {
+  KEYW: Direction.North,
+  KEYS: Direction.South,
+  KEYA: Direction.West,
+  KEYD: Direction.East,
+  ARROWUP: Direction.North,
+  ARROWDOWN: Direction.South,
+  ARROWLEFT: Direction.West,
+  ARROWRIGHT: Direction.East,
+});
+
+const keyEventToKey = pipe(prop("code"), toUpper);
+
+const keyEventToDirection = pipe(keyEventToKey, keyToDirection);
+
 const handleKeyDownEvent = pipe(
   keyEventToDirection,
-  unless(isNil, pipe(makeTurn, input))
+  unless(isNil, pipe(makeTurn, input)),
 );
 document.addEventListener("keydown", handleKeyDownEvent);
 
