@@ -428,8 +428,11 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    color: "#fff",
   },
   icon: {
+    width: "100%",
+    color: "#fff",
     fill: "#fff",
     stroke: "#fff",
   },
