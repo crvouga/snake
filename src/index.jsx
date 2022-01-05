@@ -345,7 +345,18 @@ const toModalClassName = (state) =>
 
 const Modal = (state) => (
   <div className={toModalClassName(state)}>
-    <button onClick={pipe(makeRestart, input)} className="button">
+    <button
+      onClick={pipe(makeRestart, input)}
+      style={{
+        backgroundColor: "#1f47c2",
+        border: "none",
+        color: "white",
+        fontWeight: "bold",
+        padding: "12px",
+        borderRadius: "12px",
+        fontSize: "1.5rem",
+      }}
+    >
       ↻ Play Again?
     </button>
   </div>
