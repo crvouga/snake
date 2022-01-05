@@ -93,7 +93,7 @@ body {
 }
 
 .fade-in {
-  animation: fade-in 1s ease-in-out;
+  animation: fade-in 0.2s ease-in-out;
   /* 	animation-delay: 1s; */
 }
 
