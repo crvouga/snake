@@ -7,8 +7,9 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies including Rollup for Alpine Linux
+RUN npm ci && \
+    npm install @rollup/rollup-linux-x64-musl
 
 # Copy all files
 COPY . .
