@@ -4,17 +4,17 @@ FROM node:18-alpine AS build
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and yarn.lock
-COPY package.json yarn.lock ./
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
 # Copy all files
 COPY . .
 
 # Build the app
-RUN yarn build
+RUN npm run build
 
 # Use Nginx for serving the built app
 FROM nginx:alpine
