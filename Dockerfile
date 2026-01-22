@@ -7,9 +7,18 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Install dependencies including Rollup for Alpine Linux
-RUN npm ci && \
-    npm install @rollup/rollup-linux-x64-musl
+# Install dependencies
+RUN npm ci
+
+# Install platform-specific Rollup native binary for Alpine Linux
+# Vite/Rollup needs this for native performance on Alpine (musl libc)
+# Detect architecture and install the appropriate package
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+    npm install @rollup/rollup-linux-arm64-musl --save-optional; \
+    else \
+    npm install @rollup/rollup-linux-x64-musl --save-optional; \
+    fi
 
 # Copy all files
 COPY . .

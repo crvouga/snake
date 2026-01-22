@@ -15,7 +15,8 @@
     "start": "vite",
     "build": "vite build",
     "test": "vitest",
-    "preview": "docker build -t snake-app . && docker run -p 80:80 snake-app"
+    "preview": "docker build -t snake-app . && docker run -p 80:80 snake-app",
+    "docker:preview": "docker build -t crvouga/snake-game:latest . && docker rm -f snake-game 2>/dev/null || true && docker run -p 8012:80 --name snake-game crvouga/snake-game:latest"
   },
   "eslintConfig": {
     "extends": [
